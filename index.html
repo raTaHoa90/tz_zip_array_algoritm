@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Реализация тестового задания</title>
+    <script src="ArrayZip.js"></script>
+    <style>
+        #arrayconfig{
+            margin: 5px;
+            float:left;
+        }
+    </style>
+</head>
+<body onLoad="generateArray()">
+    <div><textarea id="arrayconfig" rows="20" cols="100" oninput="calcLenArray()"></textarea><br>
+        размер исходной строки массива: <span id="sizeStrArr"></span><br>
+        размер значения в битах: <span id="sizeBits"></span><br><br>
+        развер сериализованного массива: <span id="sizeResultStr">?</span>
+    </div><br clear="both">
+
+    Количество элементов массива для генерации: <input id="countValues" value="1000" type="number" min="0"><br>
+    Максимально генерируемое значение: <input id="maxValue" value="300" type="number" min="0"><br>
+    <input type="button" onclick="generateArray()" value="Перегенерировать">
+    <br><br><hr>
+    <input type="button" onclick="SerializeArray()" value="Сериализовать в сжатую строку">
+    <input type="button" onclick="UnserializeArray()" value="ДеСериализовать результат в массив">
+    <br>
+    <textarea id="result" rows="20" cols="100" readonly></textarea>
+    <textarea id="resultUnzip" rows="20" cols="100" readonly></textarea>
+</body>
+</html>
