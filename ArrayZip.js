@@ -3,7 +3,7 @@ function generateArray(){
     let textarea = document.getElementById("arrayconfig"),
         countValues = +document.getElementById("countValues").value,
         maxValue = +document.getElementById("maxValue").value,
-        ar = Array(countValues).fill().map(()=>Math.floor(Math.random() * (maxValue > 1 ? maxValue : 2) + (maxValue > 1 ? 1 : 0)));
+        ar = Array(countValues).fill().map(()=>Math.floor(Math.random() * (maxValue > 1 ? maxValue : 2) + (maxValue > 4 ? 1 : 0)));
     textarea.value = '['+ ar.join(',') +']';
     document.getElementById("sizeStrArr").textContent = textarea.value.length;
     document.getElementById("sizeBits").textContent = calcCountBits(Math.max(...ar));
@@ -130,16 +130,23 @@ function ZipArray(arr){
     bufferByte[1] = zipper.pos;
     bufferByte[posBuffer] = zipper.popResult();
     
-    let result = [];
-    for(let byte of bufferByte)
+    let result = [], result2 = [];
+    for(let byte of bufferByte){
+        let sym, d = true;
         if(byte <= 33)
-            result.push( '!\\x' + (34 + byte).toString(16).padStart(2,'0') );
+            sym = '\\x' + (34 + byte).toString(16).padStart(2,'0');
         else if(byte == 127)
-            result.push('!~');
-        else 
-            result.push('\\x' + byte.toString(16).padStart(2,'0'));
-
-    return eval("'"+result.join('') + "'");
+            sym = '~';
+        else {
+            d = false;
+            sym = '\\x' + byte.toString(16).padStart(2,'0');
+        }
+        result.push((d ? '!': '') + sym);
+        result2.push((d ? '': '!') + sym);
+    }
+    result = eval("'"+result.join('') + "'");
+    result2 = eval("'"+result2.join('') + "'");
+    return result.length > result2.length ? result2 : result;
 }
 
 function replacesUnZipAnchers(m, p){
@@ -148,9 +155,27 @@ function replacesUnZipAnchers(m, p){
     return eval('"\\x' + (p.charCodeAt(1) - 34).toString(16).padStart(2,'0')+'"');
 }
 
+function replacesInverseUnZipAnchers(strAr){
+    let result = [];
+    for(let i = 0; i < strAr.length; i++){
+        let p = strAr[i];
+        if(p == '!'){
+            i++;
+            result.push(strAr[i]);
+        }else if(p == '~')
+            result.push('\x7F');
+        else
+            result.push(eval('"\\x' + (p.charCodeAt(1) - 34).toString(16).padStart(2,'0')+'"'));
+    }
+    return result;
+}
+
 function UnZipArray(str){
     let resultArray = [],
-        bufferChar = str.replace(/(\!.)/g, replacesUnZipAnchers).split(''),
+        inverseCompressed = str[0] != '!',
+        bufferChar = inverseCompressed 
+            ? replacesInverseUnZipAnchers(str.split(''))
+            : str.replace(/(\!.)/g, replacesUnZipAnchers).split(''),
         bits = bufferChar.shift().charCodeAt(0),
         zipper = new ByteZipper(bits);
     zipper.pos = bufferChar.shift().charCodeAt(0);
